@@ -114,9 +114,14 @@ cd ..
 
 ## 本地仓库推送远端仓库
 
-* **`git push master origin`**
+* **`git push origin master`**
 
-# `.gitignore`设置
+## 本地仓库拉取远程仓库
+
+* `git pull origin master` : 拉取并合并
+* `git fetch origin master` : 只拉取之后通过手工合并
+
+# .gitignore设置
 
 * `*.temp` : 忽略所有以temp结尾的文件
 * /[文件夹名] : 忽略整个文件夹
