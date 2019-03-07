@@ -164,11 +164,49 @@
 
 ## shell脚本
 
+`#!/bin/bash` : 在文件开头约定的标记,表示该文件是通过bash运行
+
+### shell变量
+
+* **定义变量初始化注意变量名与`=`之间不能有空格**
+* 使用变量时要前置`$`,使用`{}`将变量名划定范围
+* `readonly [name]`: 设置变量只读
+* 使用字符串变量时:
+  * 单引号: **单引号内部所有字符串都是原样输出的,所有不能包含变量名**
+  * 双引号: 双引号内可以有变量名,也可以有转义字符
+  * 对字符串的操作 :
+    * `${#string}` : 获取字符串长度
+    * `${string} [char]` `:  获取char字符在string中的位置
+
+### 数组操作
+
+只支持一维的数组类型
+
+* 数组定义
+
+  `arrayName = {value0, value1, value2....}`
+
+  可以使用不连续的下标,且下标无范围
+
+* 获取数组元素
+
+  `${arrayName[index]}`
+
+* 获取数组元素个数
+
+  `${#arrayName[*/@]`
+
+* 获取数组单个元素的长度
+
+  `${arrayName[iindex]}`
+
 ### 数据流
 
 * 输入流 : `stdin`,由0表示
 * 输出流 : `stdout`, 由1表示
 * 标准错误流: `stderr`, 由2表示
+  * 使用`command < fileIn`将本来从标准输入中读取转换为从`fileIn`文件读取
+  * 使用`command > fileOut`将本来输出到标准输出的输出到`fileOut`文件中
 
 ### 管道符号
 
@@ -181,10 +219,18 @@
 用`$n`表示第n个参数
 
 * 默认`$0`表示命令本身
-* `$#` 表示传递参数的个数
-* `$*`一个字符串表示传递的所有参数
 
-### 逻辑结构
+* `$#` 表示传递参数的个数
+
+* `"$*"`一个字符串表示传递的所有参数`"args[1], args[2], args[3] ..."`
+
+  `"$@"`以多个字符串表示传递的参数`“args[1]”, “args[2]”, “args[3]” ...`
+
+  
+
+### 逻辑结构(流程控制)
+
+逻辑运算要用`[]`包含
 
 * ```shell
   if condition
@@ -192,7 +238,18 @@
   	command1
   	command2
   	........
+  else		# 可有可无
   fi
+  
+  if condition1
+  then
+  	commands1
+  elif condition2
+  then 
+  	commands2
+  ......
+  fi
+  
   # 逻辑运算符
   -eq		# ==
   -ne		# !=
@@ -200,6 +257,20 @@
   -lt		# <
   -ge 	# >=
   -le		# <=
+  # 注意逻辑结构表达式要用中括号包括,并且运算数与运算符之间要有空格
+  ex:
+  if [ $a -eq $b]
+  then
+  	echo "$a != $b"
+  fi
+  # 或与的逻辑实现
+  # 与:
+  1. if [ $a -eq $b -a $a -eq $b ]
+  2. if [[ $a -eq $b && $a -eq $b ]]
+  # 或:
+  1. if [ $a -eq $b -o $a -eq $b ]
+  2. if [[ $a -eq $b || $a -eq $b ]]
+  
   ```
 
 * ```shell
@@ -208,6 +279,83 @@
   	commands
   done
   ```
+
+* ```shell
+  for var in item1 item2 item3 .... itemN
+  do
+  	command
+  done
+  ```
+
+* ```bash
+  case var in
+  var1):
+  	commands1
+  	break
+  	;;
+  var2):
+  	command2
+  	break
+  	;;
+  ......
+  esac
+  ```
+
+* 
+
+### 运算操作
+
+* 算术运算符:
+
+  使用`expr`进行运算
+
+  ```bash
+  val=`expr $a + $b`
+  val=`expr $a - $b`
+  val=`expr $a \* $b`		# 乘号*要进行转义
+  val=`expr $a / $b`
+  ```
+
+  注意:
+
+  * **运算数和运算符之间必须要有空即`$a + $b`三者之间必须要有空格**
+  * **`=`和两个表达式之间不要有空格**
+
+### echo命令
+
+* 显示字符串,最好用双引号,可以子字符串中使用转义字符,也可以输出变量值
+* 可是使用`>`将输出重定向写入到文件中去
+* echo默认自动添加换行符
+  * 也可以使用`printf`命令进行
+  * `printf “format-string” [arguments]`
+
+### test命令
+
+可以用来比较变量,字符串是否相等,也可以比较文件
+
+### shell函数
+
+* 函数定义:
+
+  ```shell
+  function functName()
+  	commands
+  	......
+  	return []
+  ```
+
+* 函数调用
+
+  `functName args1 args2...`
+
+* 不定义return的默认返回式最后一条语句的运行结果
+
+* 在函数中使用参数和向脚本中传递参数式一个模式
+
+### 包含文件
+
+* `. [文件路径]` : 例如`. ./test.sh`包含当前文件夹下的test.sh脚本
+* `source [文件路径]`
 
 ## Makefile
 
