@@ -1,5 +1,7 @@
 # 第一节课
 
+**类中数据和方法默认是私有的**
+
 ## overloading(重载机制)
 
 1. 相同函数名,有不同的参数列表的函数可以共存
@@ -379,4 +381,108 @@ extend "C" {
 4. `const`
 
    * 注意在和指针同时使用时注意顶层`const`与底层`const`的区别
+
    * `const`修饰的地址参数一定是在函数中是输入(**只读**),不进行改变
+
+   * `const`在函数名之后修饰可以声明常量对象可调用的方法(**该函数不能对对象有所改变**),常量对象不能调用其他方法
+
+     ```c++
+     class Obj {
+         int i;
+     public :
+         int get_i() const {
+             return i;
+         }
+     }
+     
+     int main() {
+         const Obj obj;
+         obj.get_i();
+     }
+     ```
+
+# 第六节课
+
+## 单例模式的实现
+
+使得一个类只允许声明一个实例对象
+
+1. 构造方法私有,防止外部调用
+2. 类内部维护一个静态方法来返回唯一实例,**通过类名调用获取唯一对象实例**
+3. **该对象实例只有在第一次调用获取静态方法时实例化创建唯一对象**
+
+```c++
+class Obj{
+    Obj(){}		// 私有构造方法
+    static Obj *self = NULL;	// 唯一实例对象指针
+public :
+    static Obj *get_instance() {	// 获取唯一对象函数
+        if (self == NULL) {
+            self = new Obj();
+        }
+        return self;
+    }   
+}
+```
+
+## 运算符重载
+
+对已有的运算符赋予新的含义
+
+```c++
+class Account {
+    int balance;
+public :
+    Account();
+    Account operator+(int money) {		// 对+进行重载,表示向账户中存钱
+        balance += money;
+        return *this;
+    }
+}
+
+int main() {
+    Account a;
+    a = a + 100;
+}
+```
+
+**重载的核心在于符合人的逻辑,例如字符串的+重载为字符串拼接操作**
+
+## `new - delete   vs   malloc - free`
+
+* 使用`malloc - free` : 
+  1. 预先不知道所需内存大小 : 例如链表的构建
+* 使用`new - delete` : 
+  1. 动态分配人为控制声明周期
+* **`new = malloc + constructor(构造方法)`**
+  1. 即`new`操作是在先在堆区分配空间,再调用构造方法
+* **`delete = destructor(析构函数) + free`**
+  1. 即`delete`操作是先调用析构函数,再释放堆中的动态空间
+* 使用核心在于两对成对操作.
+
+## 继承
+
+1. `C++`中继承语法
+
+   ```c++
+   class FatherObj{			// 所有子类的共性
+   public :
+       void doSomething(){
+           /*
+           code in common
+           */
+       }
+   }
+   class SonObj : FatherObj {			// 特性
+   public :
+       void doSomething() {
+           FatherObj::doSomething();	// 实现共同的行为
+           /*
+           code in special
+           */
+       }
+   }
+   ```
+
+   
+
