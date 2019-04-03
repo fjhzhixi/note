@@ -39,3 +39,22 @@
 
 # Acyclic Visitor
 
+
+
+
+
+# Observer
+
+## 使用场景
+
+一个目标对象的状态发生改变,所有的依赖对象都会得到通知
+
+## 实现要点
+
+* 一个目标对象`Subject`,其中有
+  * 一个观察者列表,使用`attach(Observer o)`加入观察者
+  * 一个`setStatus()`更新目标的状态,并且**在方法内调用`notifyAllObservers()`来通知所有观察者**
+  * `notifyAllObservers()`方法中调用观察者列表中的每个观察者`observer.update()`来检查目标状态的改变
+* 一个观察者接口,至少有`update()`
+* 若干个观察者实例实现观察者接口
+
