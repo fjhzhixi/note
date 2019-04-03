@@ -14,7 +14,7 @@
 
 同一时间只允许一个线程访问某个共享对象
 
-## 使用情形的条件:
+## 使用情形:
 
 1. 多线程共享
 2. 状态可能发生改变
@@ -95,7 +95,77 @@ public synchronized void putRequest(Request request) {
 实现一个守护类`Obj`,守护的是获取操作
 
 1. 一个线程从`Obj`中获取信息,该获取方法使用`while() + wait()`来确定满足获取操作的守护条件
-2. 一个线程改变`Obj`的状态是的满足获取操作的守护条件
+2. 一个线程改变`Obj`的状态使得满足获取操作的守护条件
 
+# Balking
 
+## 使用情形 :
+
+如果现在不适合执行这个操作,或者没必要执行这个操作,就停止处理,直接返回
+
+1. 语句并不一定要执行 : 可以提高性能
+2. 不需要等待守护条件成立 : 当检测到守护条件不成立时,立即返回进行下一个操作
+
+## 实现
+
+1. 被防护的对象中拥有一个被防护的方法,当线程执行该方法时,若守护条件成立则执行实际操作,否则直接返回,**守护条件是否成立与对象的状态有关**
+
+# 介于Balking,Guarded Suspension之间
+
+* 在`Balking`中守护条件一旦不满足则线程立即返回退出
+* 在`Guarded Suspension`守护条件不满足时线程会`wait()`直到条件满足
+* **取一个折中的设计 : 当`wait()`一定时间之后不满足则退出, 并且要区分是超时退出还是执行完退出**
+
+```java
+public class Host {
+    private final long timeout;	// 超时时间
+    private boolean ready = false; 	// 守护条件是否满足
+    // 修改状态
+    public synchronized void setStatus(boolean status) {
+        ready = status;
+        notifyAll();
+    }
+    // 检测状态后执行,超时直接退出
+    public synchronized void excute() {
+        long start = System.currentTimeMillis();
+        while(!ready) {
+            long now = System.currentTimeMillis();
+            long rest = timeout - (now - start);
+            if (rest <= 0) {
+                // 超时
+                return;
+            }
+            wait(rest);
+        }
+        // do excute : 真正的目标逻辑代码
+    }
+}
+```
+
+# Interrupt
+
+## throws InterruptedException
+
+抛出中断异常的方法有`wait(), sleep(), join()`,其共同特点有:
+
+1. 花费时间
+2. 可以取消
+
+**`interrupt()`方法只是改变了线程的中断状态,只有线程中有检测状态的语句时才能抛出中断异常**
+
+### sleep&interrupt
+
+当`Thread1`处于`sleep`状态时,可以在一个可以执行的线程中执行`Thread1.interrupt()`使其终止暂停状态并抛出中断异常
+
+无论何时,任何线程都能调用其他线程的`interrupt`方法
+
+### wait&interrupt
+
+当对在等待对列中的线程执行`interrrupt`方法时,其会从等待对列中出来,在重新获得锁之后抛出中断异常
+
+### join&interrupt
+
+当线程使用`join`方法等待其他线程终止时,可以使用`interrupt`方法取消等待
+
+**上述所有抛出中断异常之后线程控制权均交到`catch`块中**
 
