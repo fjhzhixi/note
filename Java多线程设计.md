@@ -169,3 +169,129 @@ public class Host {
 
 **上述所有抛出中断异常之后线程控制权均交到`catch`块中**
 
+# Read-Write Lock
+
+## 使用情景
+
+1. 多个线程同时读取没有冲突(读是安全的操作,不会改变属性)
+2. 多个线程同时写入会有冲突(写是不安全的操作,必须保证操作的原子性)
+3. 两个或以上线程同时读和写会有冲突
+
+即冲突分析 :
+
+* 当线程试图获得读取的锁时 :
+  * 如果有线程在执行写入,则等待
+  * 如果有线程在执行读取,无需等待
+* 当线程试图获取写入的锁时 :
+  * 如果有线程在执行写入,则等待
+  * 如果有线程在执行读取,则等待
+
+作用 :
+
+1. 读取并行来提高程序性能
+2. 适合读取操作繁重时
+3. 适合读取频率比写入的频率高
+
+## 实现
+
+**核心在于自定义一个锁类 : `ReadWriteLock`**
+
+**`java`提供的`synchronized`是一种物理锁,不能认为改变机制,但是我们可以实现逻辑锁来实现一些特定功能**
+
+```java
+public final class ReadWriteLock {
+    private int readingReaders = 0;	//正在读取的线程个数
+    private int waitingWriters = 0;	//正在等待写入的线程个数
+    private int writingWriters = 0; //正在写入的线程个数
+    private boolean preferWriter = true; //为真时写入优先
+    // 对读取方法的上锁
+    public synchronized void readLock() throws InterruptedException {
+        /* 等待条件 :
+           1. 当前有正在写入的线程
+           或
+           2. 当前有正在等待写入的线程,且写入优先级
+        */
+        while (writingWriters > 0 || (preferWriter && waitingWriters) > 0) {
+            wait();
+        }
+        // 该线程进行读入
+        readingReaders++;
+    }
+    // 对读取方法解锁
+    public synchronized void readUnlock() {
+        readingReaders--;
+        // 在不进行读取时写入优先
+        preferWriter = true;
+        notifyAll();
+    }
+    
+    
+    // 对写入方法加锁
+    public synchronized void writeLock() throws InterruptedException {
+        // 正在等待写入的线程+1
+        waitingWriters++;
+        /* 等待条件
+           1. 当前有正在读取的线程
+           或
+           2. 当前有正在写入的线程
+        */
+        try {
+            while (readingReaders > 0 || writingWriters > 0) {
+                wait();
+            }
+        } finally {
+                // 无论是等待到唤醒还是抛出中断异常,等待队列都要-1
+                waitingWriters--;
+        }
+            // 等待结束正在写入的线程加1
+        writingWriters++;
+    }
+    // 对写入方法解锁
+    public synchronized void writeUnlock() {
+        writingWriters--;
+        preferWriter = false;
+        notifyAll();
+    }
+}
+```
+
+**对共享数据使用读写锁进行保护**
+
+```java
+public class Data {
+    // 存储数据的数据结构
+    private final char[] buffer;
+    private final ReadWriteLock lock = new ReadWriteLock();
+    
+    // 线程从数据中读取的安全方法
+    public char[] read() throws InterruptedException {
+        lock.readLock();
+        try {
+            return doRead();	// 真正的读入数据方法
+        } finally {
+            lock.readUnlock();	// 无论是否抛出异常都要解锁
+        }
+    }
+    // 线程向数据中写入的安全方法
+    public void write(char c) throws InterruptedException {
+        lock.writeLock();
+        try {
+            doWrite();		// 真正的写入方法
+        }finally {
+            lock.writeUnlock();
+        }
+    }
+}
+```
+
+# Thread-Per-Message
+
+## 使用情形
+
+1. 提高响应,**要求请求没有返回值**,即委托线程可以继续执行,而执行端执行即可
+2. 要求请求的操作顺序没有要求
+
+## 实现
+
+* 核心在于委托端线程,执行端线程,委托端通过发送消息让执行端执行,执行端对每一个请求新开一个线程来处理,**但是只负责启动线程即可(`start`),之后控制权便返回委托方,具体处理线程自己执行**
+
