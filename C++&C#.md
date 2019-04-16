@@ -497,6 +497,8 @@ int main() {
 
    **子类消亡时先调用自己的析构函数,再调用父类的析构函数**
 
+   二者顺序时相反的
+
 3. **能传递父类参数的一定可以传递子类参数,所以在定义参数时尽可能的抽象**
 
 ### 成员函数与继承
@@ -542,3 +544,124 @@ class son : public father {
 ### 防止继承发生
 
 使用`final`关键词定义类表示其不能被继承
+
+# 第七节课
+
+1. 纯虚函数
+
+   ```c++
+   virtual void pure_virtual_function() = 0;
+   ```
+
+   **当一个类中有纯虚函数时该类就是抽象类,抽象类不允许实例化**
+
+   纯虚函数也允许有函数结构体
+
+   抽象类的所有子类要想可以实例化必须实现纯虚函数,如果不实现则该子类仍是抽象类
+
+2. 不同类家族之间的关系
+
+   具有共同的功能但是自身在不同的类的继承树中的情况 : **使用接口的机制**
+
+   在`c++`中允许多继承,所以接口本质上就是一个**所有方法都是纯虚函数的抽象类**
+
+   在使用这个共有功能时传入的参数是**这个接口的抽象类型**
+
+   **接口的本质是依赖于行为共性而关联不同家族树上的类,注意,由于其依赖的是行为(即方法),所以设计接口时接口不应该有任何数据成员属性**
+
+   ```c++
+   class Bird : class Animal
+   {
+       public:
+       void fly(){}
+   }
+   class Airplane : class Machine
+   {
+       public:
+       void fly(){}
+   }
+   class FlyObject
+   {
+       public:
+       virtual void fly(){}
+   }
+   class radar
+   {
+       public:
+       void findFlyObject(FlyObject f){}
+   }
+   ```
+
+3. 构造析构于多态
+   1. 构造函数一定没有多态机制,即构造函数一定不会被`virtual`修饰
+
+   2. 父类的析构函数要支持多态性,否则当参数为父类类型,但是传递进入的是子类类型时可能只调用了父类的析构函数,但是没有调用子类的析构函数,导致内存少泄露
+
+      **所以好的原则是习惯性的将析构函数设置为虚函数**
+
+      ```c++
+      class Farher
+      {
+          public:
+      	Father();
+          virtual ~Father(){
+              cout << "father die" << endl;
+          }
+      }
+      class Son
+      {
+          public:
+      	Son();
+          virtual ~Son(){
+              cout << "son die" << endl;
+          }
+      }
+      ```
+
+4. 多态一般不用于静态函数,因为**多态保证的行为的正确性,而静态方法与对象本身无关,所以不用使用多态**
+
+5. 栈的数据结构 : **支持泛型的数据结构**,不关心栈中存储的具体数据类型
+
+   ```c++
+   template <class T>	//该类是一个模板类
+   class Stack<>
+   {
+       T stack[100];
+       int top;
+       public:
+       	Stack()
+       	void push(T elem){}
+       	T pop(){}
+   }
+   //使用时
+   Stack<int> stack_int;
+   stack_int.push(3)
+   Stack<float> stack_float;
+   stack_float.puhs(3.2)
+   ```
+
+   泛型支持万能容器的构造
+
+   **万能容器实现在`stl`标准库中,其中的类均是标准模板库**
+
+   1. 万能容器
+      1. `vector` : 模仿的是动态数组,所以要求地址空间是连续的,**所以当加入的对象多于数组大小是数组会搬家,即进一次整体的拷贝,寻找一个更大的连续空间**
+      2. `list` : 模仿的是链表,其中元素的存储是离散的
+   2. 动态增长
+
+6. 迭代器 :
+
+   迭代器是个类,`stl`中的所有容器都要支持`begin() & end()`两个方法
+
+   ```c++
+   vector<int> vi;
+   vector<int>::iterator it = vi.begin();
+   while(it != vi.end) {
+       cout << *it << endl;
+       // do something
+       it++;
+   }
+   //迭代器通过重载运算符(++/*等等)来将自己的行为伪装成一个指针
+   ```
+
+   
