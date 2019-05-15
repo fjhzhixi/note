@@ -386,6 +386,50 @@ function inherits(Child, Parent) {//实现原型链继承关系构建的函数
 
 与`java`相同,只不过构造函数为`constructor(args)`
 
+# 浏览器
+
+## 常用对象
+
+* `window`对象不但充当全局作用域,而且表示浏览器窗口
+  1. `innerWidth`和`innerHeight`属性,可以获取浏览器窗口的内部宽度和高度
+  2. `outerWidth`和`outerHeight`属性,可以获取浏览器窗口的整个宽高
+* `navigator`对象表示浏览器的信息
+* `screen`对象表示屏幕的信息
+* **`location`对象表示当前页面的URL信息**
+* `document`对象表示当前页面,由于HTML在浏览器中以DOM形式表示为树形结构,`document`对象就是整个DOM树的根节点
+
+## DOM操作
+
+HTML文档被浏览器解析后就是一棵DOM树,每个标签代表一个节点
+
+1. 获得节点 : 
+
+   * `document.getElementById()` : 返回唯一的节点
+   * `document.getElementsByTagName()` : 返回多个匹配的节点
+   * `document.getElementsByClassName()` : 返回多个匹配的节点
+
+2. 更新节点 :
+
+   * 修改`innerHTML`属性,可以直接修改该节点的HTML内容但是注意原来的内容就会被覆盖
+   * 修改`innerText`或`textContent`属性 : 只能修改文本属性,不能改变标签
+
+3. 插入节点 : 在保存原有节点信息上添加
+
+   * 使用`appendChild` : 如果从节点数中拿出一个插入到其他位置,则原位置上的节点会先删除,大多数情况下我们会新建一个节点插入
+   * `parentElement.insertBefore(newElement, referenceElement)` : 在父节点的某一指定子节点之前添加节点
+
+4. 删除节点
+
+   获得要删除的节点以及其父节点只有使用`parentNode.removeChild()`
+
+   **但是注意`parent.children`属性是一个动态的变化**
+
+5. 
+
+
+
+
+
 
 
 
