@@ -424,7 +424,117 @@ HTML文档被浏览器解析后就是一棵DOM树,每个标签代表一个节点
 
    **但是注意`parent.children`属性是一个动态的变化**
 
-5. 
+
+# JQuery
+
+`JQuery`是对**`DOM`树的一致化操作**
+
+## 选择器
+
+### 一般选择器
+
+选择器返回的是`JQuery`对象,即一个选择出**节点的列表**
+
+* 按`ID`查找 : 
+
+  ```javascript
+  var select = $('#id-name')
+  //查找<div id='id-name'>...</div>的节点
+  ```
+
+* 按`tag`查找 :
+
+  ```javascript
+  var select = $('tag-name')
+  //查找<tag-name>...</tag-name>的节点
+  ```
+
+* 按`class`查找 :
+
+  ```javascript
+  var select = $('.class-name')
+  //查找<div class="class-name">...</div>的节点
+  ```
+
+* 按属性查找 :
+
+  除了之前这些共有的属性之外,对实际节点还有其他特殊属性,例如`name`
+
+  ```javascript
+  var select = $('[name="email"]');
+  var select = $('[name^="pre-"]');//所有name属性以pre-开始的节点
+  var select = $('[name$="-end"]');//所有name属性以-end结束的节点
+  ```
+
+1. 之上的所有选择规则都可以**组合起来** : 直接连接在一起即可 :
+
+   ```javascript
+   var tr = $('tr.red');
+   //找出<tr class="red">...</tr>的节点
+   ```
+
+   **这种组合形式相当于取交集**
+
+2. 之上的所有选择规则可以构造成**多项选择器** : 使用`,`组合 :
+
+   ```javascript
+   var select = $('p.red,p.green');
+   //选择出<p class="red">...</p>和<p class="green">...<\p>的节点
+   ```
+
+   **这种组合形式相当于取并集**
+
+### 层级选择器
+
+选择某一上层节点之下的符合选择器的节点
+
+**将选择条件按节点的层次结构组织起来即可,中间用空格隔开**
+
+使用`$(parent>child)`**规定该层级结构必须是紧邻的父子节点结构**
+
+### 过滤器
+
+使用`:`之后限定
+
+## 修改
+
+使用`JQuery`对象的**方法**可以批量化的**修改选择器选择出来的节点列表**
+
+### 修改Text和HTML
+
+1. 使用`text()`和`html()`无参方法获得节点的文本和原始`HTML`文本
+2. 使用`text('...')`和`html('...')`有参数的方法对节点的文本和`HTML`文本进行修改
+
+### 修改CSS
+
+使用`css(‘name’, ‘value’)`方法**重写**节点的`CSS`
+
+使用`addClass(), removeClass()`**修改**节点的`CSS`
+
+### 修改表单
+
+使用`val()`方法获取(无参)和设置(有参)`value`属性
+
+### 修改DOM
+
+* 添加节点 : 对父节点
+
+  1. 使用`append('html')`方法在同层次最后添加一个子节点
+  2. 使用`prepend()`在最前
+  3. 使用`js.after()`在某个节点之后
+  4. 使用`js.before()`在某个节点之前
+
+  可以直接传入一个节点字符串,`DOM`对象,`JQuery`对象,函数对象
+
+* 删除节点 : 使用`js.remove()`即可
+
+* 
+
+
+
+
+
+
 
 
 
